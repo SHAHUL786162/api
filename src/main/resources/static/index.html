@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Product Catalog</title>
+
+<style>
+
+body {
+    font-family: Arial;
+    margin: 20px;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th, td {
+    border: 1px solid gray;
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background-color: #f2f2f2;
+}
+
+tr:hover {
+    background-color: #f5f5f5;
+    cursor: pointer;
+}
+
+.star {
+    color: gold;
+}
+
+#details {
+    margin-top: 20px;
+    padding: 10px;
+    border: 1px solid gray;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h2>Product Catalog</h2>
+
+Search:
+<input type="text" id="searchInput">
+<button onclick="search()">Search</button>
+
+<br><br>
+
+<table>
+
+<thead>
+<tr>
+<th>ID</th>
+<th>Name</th>
+<th>Category</th>
+<th>Rating</th>
+<th>Price</th>
+</tr>
+</thead>
+
+<tbody id="productTable">
+
+</tbody>
+
+</table>
+
+<br>
+
+<button onclick="prevPage()">Previous</button>
+<button onclick="nextPage()">Next</button>
+
+<div id="details">
+
+<h3>Product Details</h3>
+<div id="detailsContent">Click a product row</div>
+
+</div>
+
+<script>
+
+let page = 1;
+let limit = 5;
+
+loadProducts();
+
+function loadProducts() {
+
+fetch(`/api/products?page=${page}&limit=${limit}`)
+
+.then(response => response.json())
+
+.then(data => {
+
+let table = document.getElementById("productTable");
+
+
+table.innerHTML = "";
+
+data.content.forEach(product => {
+
+let stars = getStars(product.rating);
+
+let row = `<tr onclick="showDetails('${product.name}','${product.category}','${product.brand}','${product.price}','${product.rating}','${product.description}')">
+
+<td>${product.productId}</td>
+<td>${product.name}</td>
+<td>${product.category}</td>
+<td>${stars}</td>
+<td>${product.price}</td>
+
+</tr>`;
+
+table.innerHTML += row;
+
+});
+
+});
+
+}
+
+function getStars(rating) {
+
+let fullStars = Math.floor(rating);
+
+let stars = "";
+
+for(let i=0;i<fullStars;i++)
+stars += "★";
+
+return stars;
+
+}
+
+function nextPage() {
+
+page++;
+loadProducts();
+
+}
+
+function prevPage() {
+
+if(page > 1) {
+page--;
+loadProducts();
+}
+
+}
+
+function search() {
+
+let text = document.getElementById("searchInput").value;
+
+fetch(`/api/products/search?name=${text}`)
+
+.then(response => response.json())
+
+.then(data => {
+
+let table = document.getElementById("productTable");
+
+table.innerHTML = "";
+
+data.forEach(product => {
+
+let stars = getStars(product.rating);
+
+let row = `<tr onclick="showDetails('${product.name}','${product.category}','${product.brand}','${product.price}','${product.rating}','${product.description}')">
+
+<td>${product.productId}</td>
+<td>${product.name}</td>
+<td>${product.category}</td>
+<td>${stars}</td>
+<td>${product.price}</td>
+
+</tr>`;
+
+table.innerHTML += row;
+
+});
+
+});
+
+}
+
+function showDetails(name, category, brand, price, rating, description) {
+
+let details = `
+Name: ${name} <br>
+Category: ${category} <br>
+Brand: ${brand} <br>
+Price: ${price} <br>
+Rating: ${rating} <br>
+Description: ${description}
+`;
+
+document.getElementById("detailsContent").innerHTML = details;
+
+}
+
+</script>
+
+</body>
+
+</html>
